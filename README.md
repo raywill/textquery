@@ -60,7 +60,7 @@ sqltext "select c2, ' ', group_concat(c1, ',') from a.txt seperated by '|' group
 the output is
 ```
 China Asia
-USA Americ
+USA America
 Euro Germany,France
 
 ```
