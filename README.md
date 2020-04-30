@@ -31,7 +31,7 @@ France  is in Euro
 can be queryed using follow bash cmd
 
 ```
-textquery "select c1 from a.txt seperated by ' ' where c4 = 'Euro'"
+textquery "select c1 from a.txt where c4 = 'Euro'"
 ```
 
 the output is
@@ -54,7 +54,7 @@ France | Euro
 can be queryed using follow bash cmd
 
 ```
-textquery "select c2, ' ', group_concat(c1, ',') from a.txt seperated by '|' group by c2"
+textquery "select c2, ' ', group_concat(c1, ',') from a.txt group by c2"
 ```
 
 the output is
@@ -119,7 +119,7 @@ Euro |  Rainy
 can be queryed using follow bash cmd
 
 ```
-textquery "select t1.c1, ',' t2.c2 from a.txt t1 seperated by ' ', b.txt t2 seperated by '|'  where t1.c4 = t2.c1"
+textquery "select t1.c1, ',' t2.c2 from a.txt t1, b.txt t2 where t1.c4 = t2.c1"
 ```
 
 this will generate content below

@@ -12,9 +12,12 @@ from __future__ import print_function
 from moz_sql_parser import parse
 import sqlite3
 import sys
+import os
 
 BOM = b'\xef\xbb\xbf'
 DB_PATH = '/tmp/data.db'
+SEP=os.environ.get('S') if os.environ.get('S') else ','
+
 
 if len(sys.argv) < 2:
     print ("usage:%s \"select c1 from inputfile\"" % (sys.argv[0]))
@@ -75,35 +78,58 @@ conn = sqlite3.connect(DB_PATH)
 conn.text_factory = lambda x: unicode(x, 'utf-8', 'ignore')
 cursor = conn.cursor()
 
-fileNames = collectTableNames(ast)
-for fileName in fileNames.keys():
+fileNameMap = collectTableNames(ast)
+fileNames = fileNameMap.keys()
+lnFileNames = map(lambda(x) : x.replace('/', '_').replace('.', '_'), fileNames)
+
+for i in range(len(fileNames)):
+    os.symlink(fileNames[i], lnFileNames[i])
+    userSql = userSql.replace(fileNames[i], lnFileNames[i])
+
+for fileName in lnFileNames:
     # stat max column size
     lines = open(fileName,'r').readlines()
-    columnCount = 0
+    # in case of empty file, build a dummy column `c1` for it
+    columnCount = 1
     for line in lines:
-        items = line.strip('\n').strip('\r').split(',')
+        items = line.strip('\n').strip('\r').split(SEP)
         columnCount = max(columnCount, len(items))
 
     # create table
     sql = "drop table if exists %s" % (fileName)
     cursor.execute(sql)
     sql = buildCreateTableSql(fileName, columnCount)
-    cursor.execute(sql)
+    try:
+        cursor.execute(sql)
+    except:
+        print("fail exec sql [%s]" % (sql))
+        sys.exit(-1)
 
     insertSql = "INSERT INTO %s VALUES (%s)" % (fileName, buildQuestionMarks(columnCount))
 
     # load data into sqlite table
     for line in lines:
-        items = line.strip('\n').strip('\r').strip(BOM).split(',')
+        items = line.strip('\n').strip('\r').strip(BOM).split(SEP)
         if (len(items) == 0 or len(items[0]) == 0): # skip empty line
             continue
 	items.extend(['' for n in range(len(items), columnCount)])
         cursor.execute(insertSql, items)
     conn.commit()
 
+for i in range(len(fileNames)):
+    os.unlink(lnFileNames[i])
+
 # output sql result
-cursor.execute(userSql)
-result = cursor.fetchall()
+result = None
+try:
+    # print (userSql)
+    cursor.execute(userSql)
+    result = cursor.fetchall()
+except:
+    print("fail exec sql [%s]" % (userSql))
+    sys.exit(-1)
+
+
 for r in result:
     for v in r:
         print ("%s" % (v),end='')
