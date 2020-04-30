@@ -85,9 +85,9 @@ Bob
 Jack
 ```
 
-Want to know good guy in user.txt? just type
+Want to know good guys in user.txt?  just type
 ```
-textquery "select * from user.txt where c1 not in (select * from blocklist.txt)"
+textquery "select * from user.txt where c1 not in (select * from blacklist.txt)"
 ```
 
 you will get
