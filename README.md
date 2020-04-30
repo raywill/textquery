@@ -65,28 +65,35 @@ Euro Germany,France
 
 ```
 
-## Insert Into Select Example
+## Subquery Example
 
-a.txt has content below
-
-```
-China is in Asia
-USA  is in America
-Germany  is in Euro
-France  is in Euro
-```
-
-can be queryed using follow bash cmd
+`blacklist.txt`：
 
 ```
-textquery "insert into /tmp/b.txt select c1 from a.txt seperated by ' ' where c4 = 'Euro'"
+Tom
+Jerry
+Smith
+Alice
+Bob
 ```
 
-this will generate a new file /tmp/b.txt with content below
+`user.txt`：
 
 ```
-Germany
-France
+Tommy
+Bob
+Jack
+```
+
+Want to know good guy in user.txt? just type
+```
+textquery "select * from user.txt where c1 not in (select * from blocklist.txt)"
+```
+
+you will get
+```
+Tommy
+Jack
 ```
 
 
